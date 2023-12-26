@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   package="com.aeroncookbook.sbe"
+                   id="688"
+                   version="1"
+                   semanticVersion="0.1"
+                   description="Lobby SBE Messages">
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+        <composite name="varStringEncoding">
+            <type name="length" primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData" primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
+        </composite>
+        <composite name="groupSizeEncoding" description="Repeating group dimensions.">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup" primitiveType="uint16"/>
+        </composite>
+
+        <enum name="GameMode" encodingType="int32">
+            <validValue name="CAPTURE_THE_FLAG">1</validValue>
+            <validValue name="FREE_FOR_ALL">2</validValue>
+        </enum>
+    </types>
+
+    <sbe:message name="match" id="1" description="A request to place a user in any lobby matching their criteria">
+        <field name="userId" id="1" type="uint64"/>
+        <field name="gameMode" id="2" type="GameMode"/>
+    </sbe:message>
+
+    <sbe:message name="matchResult" id="2" description="The result of a match request">
+        <field name="lobbyId" id="1" type="uint64" description="null if no match"/>
+    </sbe:message>
+
+</sbe:messageSchema>
