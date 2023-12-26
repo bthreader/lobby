@@ -2,7 +2,7 @@
 
 A central registry to allow users to find, join, and leave lobbies.
 
-The schema for the message types that the matching engine sends and receives is available in the `lobby-message-codecs` project off of the root. A summary of which is provided below:
+The schema for the message types that the matching engine sends and receives is available in `../lobby-message-codecs`. To summarise:
  - **Join**
    - user specifies a lobby to join
  - **Leave**
