@@ -18,7 +18,10 @@ dependencies {
     implementation("com.google.guava:guava:32.1.1-jre")
 
     // The codecs for the messages
-    implementation(":lobby-message-codecs")
+    implementation(project(":lobby-message-codecs"))
+
+    // Efficient data structures
+    implementation(libs.agrona)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

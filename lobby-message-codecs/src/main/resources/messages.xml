@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
-                   package="com.aeroncookbook.sbe"
-                   id="688"
+                   package="lobby.message.codecs"
+                   id="1"
                    version="1"
                    semanticVersion="0.1"
                    description="Lobby SBE Messages">
@@ -32,7 +32,9 @@
         <field name="gameMode" id="2" type="GameMode"/>
     </sbe:message>
 
+    <!-- TODO can this response get shared across multiple workflows? -->
     <sbe:message name="matchResult" id="2" description="The result of a match request">
+        <!-- TODO: do we need some way to link the result back to the original request? -->
         <field name="lobbyId" id="1" type="uint64" description="null if no match"/>
     </sbe:message>
 
