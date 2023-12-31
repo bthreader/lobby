@@ -1,4 +1,4 @@
-package lobby.matching.engine;
+package lobby.matching.engine.domain;
 
 import lobby.message.codecs.GameMode;
 

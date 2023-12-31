@@ -5,19 +5,19 @@ import org.agrona.DirectBuffer;
 
 
 /**
- * The result of a match request
+ * A request to put the users in a lobby into another lobby that contains at least one other user
  */
 @SuppressWarnings("all")
-public final class MatchResultDecoder
+public final class MergeRequestDecoder
 {
-    public static final int BLOCK_LENGTH = 8;
-    public static final int TEMPLATE_ID = 2;
+    public static final int BLOCK_LENGTH = 5;
+    public static final int TEMPLATE_ID = 4;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
     public static final String SEMANTIC_VERSION = "0.1";
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final MatchResultDecoder parentMessage = this;
+    private final MergeRequestDecoder parentMessage = this;
     private DirectBuffer buffer;
     private int initialOffset;
     private int offset;
@@ -65,7 +65,7 @@ public final class MatchResultDecoder
         return offset;
     }
 
-    public MatchResultDecoder wrap(
+    public MergeRequestDecoder wrap(
         final DirectBuffer buffer,
         final int offset,
         final int actingBlockLength,
@@ -84,7 +84,7 @@ public final class MatchResultDecoder
         return this;
     }
 
-    public MatchResultDecoder wrapAndApplyHeader(
+    public MergeRequestDecoder wrapAndApplyHeader(
         final DirectBuffer buffer,
         final int offset,
         final MessageHeaderDecoder headerDecoder)
@@ -104,7 +104,7 @@ public final class MatchResultDecoder
             headerDecoder.version());
     }
 
-    public MatchResultDecoder sbeRewind()
+    public MergeRequestDecoder sbeRewind()
     {
         return wrap(buffer, initialOffset, actingBlockLength, actingVersion);
     }
@@ -156,7 +156,7 @@ public final class MatchResultDecoder
 
     public static int lobbyIdEncodingLength()
     {
-        return 8;
+        return 4;
     }
 
     public static String lobbyIdMetaAttribute(final MetaAttribute metaAttribute)
@@ -171,22 +171,63 @@ public final class MatchResultDecoder
 
     public static long lobbyIdNullValue()
     {
-        return 0xffffffffffffffffL;
+        return 4294967295L;
     }
 
     public static long lobbyIdMinValue()
     {
-        return 0x0L;
+        return 0L;
     }
 
     public static long lobbyIdMaxValue()
     {
-        return 0xfffffffffffffffeL;
+        return 4294967294L;
     }
 
     public long lobbyId()
     {
-        return buffer.getLong(offset + 0, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return (buffer.getInt(offset + 0, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+    }
+
+
+    public static int gameModeId()
+    {
+        return 2;
+    }
+
+    public static int gameModeSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int gameModeEncodingOffset()
+    {
+        return 4;
+    }
+
+    public static int gameModeEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String gameModeMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public short gameModeRaw()
+    {
+        return ((short)(buffer.getByte(offset + 4) & 0xFF));
+    }
+
+    public GameMode gameMode()
+    {
+        return GameMode.get(((short)(buffer.getByte(offset + 4) & 0xFF)));
     }
 
 
@@ -197,7 +238,7 @@ public final class MatchResultDecoder
             return "";
         }
 
-        final MatchResultDecoder decoder = new MatchResultDecoder();
+        final MergeRequestDecoder decoder = new MergeRequestDecoder();
         decoder.wrap(buffer, initialOffset, actingBlockLength, actingVersion);
 
         return decoder.appendTo(new StringBuilder()).toString();
@@ -212,7 +253,7 @@ public final class MatchResultDecoder
 
         final int originalLimit = limit();
         limit(initialOffset + actingBlockLength);
-        builder.append("[matchResult](sbeTemplateId=");
+        builder.append("[MergeRequest](sbeTemplateId=");
         builder.append(TEMPLATE_ID);
         builder.append("|sbeSchemaId=");
         builder.append(SCHEMA_ID);
@@ -233,13 +274,16 @@ public final class MatchResultDecoder
         builder.append("):");
         builder.append("lobbyId=");
         builder.append(this.lobbyId());
+        builder.append('|');
+        builder.append("gameMode=");
+        builder.append(this.gameMode());
 
         limit(originalLimit);
 
         return builder;
     }
     
-    public MatchResultDecoder sbeSkip()
+    public MergeRequestDecoder sbeSkip()
     {
         sbeRewind();
 

@@ -1,4 +1,4 @@
-package lobby.matching.engine;
+package lobby.matching.engine.domain;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -37,7 +37,7 @@ public class LobbiesUtils {
      * lobbies meeting the criteria were found.
      */
     public static int searchAndFill(final int slots, final List<Lobby> lobbies,
-                                    Predicate<Lobby> lobbyPredicate) {
+                                    final Predicate<Lobby> lobbyPredicate) {
         for (final Lobby lobby : lobbies) {
             if (lobby.getUsers() + slots <= Lobby.MAX_USERS && lobbyPredicate.test(lobby)) {
                 lobby.addUsers(slots);

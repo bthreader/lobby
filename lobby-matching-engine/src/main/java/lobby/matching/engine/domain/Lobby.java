@@ -1,12 +1,11 @@
-package lobby.matching.engine;
+package lobby.matching.engine.domain;
 
 public class Lobby {
     public static final int MAX_USERS = 12;
-
     private final int id;
     private int users = 0;
 
-    public Lobby(int id) {
+    public Lobby(final int id) {
         this.id = id;
     }
 
@@ -22,7 +21,7 @@ public class Lobby {
         if (users >= this.users) {
             this.users -= users;
             return;
-        };
+        }
         throw new IllegalCallerException("Lobby is empty, can't remove users");
     }
 

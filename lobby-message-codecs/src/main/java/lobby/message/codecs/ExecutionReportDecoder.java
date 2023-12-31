@@ -5,19 +5,19 @@ import org.agrona.DirectBuffer;
 
 
 /**
- * A request to place a user in any lobby matching their criteria
+ * The result of a request
  */
 @SuppressWarnings("all")
-public final class MatchDecoder
+public final class ExecutionReportDecoder
 {
-    public static final int BLOCK_LENGTH = 12;
+    public static final int BLOCK_LENGTH = 6;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
     public static final String SEMANTIC_VERSION = "0.1";
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final MatchDecoder parentMessage = this;
+    private final ExecutionReportDecoder parentMessage = this;
     private DirectBuffer buffer;
     private int initialOffset;
     private int offset;
@@ -65,7 +65,7 @@ public final class MatchDecoder
         return offset;
     }
 
-    public MatchDecoder wrap(
+    public ExecutionReportDecoder wrap(
         final DirectBuffer buffer,
         final int offset,
         final int actingBlockLength,
@@ -84,7 +84,7 @@ public final class MatchDecoder
         return this;
     }
 
-    public MatchDecoder wrapAndApplyHeader(
+    public ExecutionReportDecoder wrapAndApplyHeader(
         final DirectBuffer buffer,
         final int offset,
         final MessageHeaderDecoder headerDecoder)
@@ -104,7 +104,7 @@ public final class MatchDecoder
             headerDecoder.version());
     }
 
-    public MatchDecoder sbeRewind()
+    public ExecutionReportDecoder sbeRewind()
     {
         return wrap(buffer, initialOffset, actingBlockLength, actingVersion);
     }
@@ -139,27 +139,27 @@ public final class MatchDecoder
         this.limit = limit;
     }
 
-    public static int userIdId()
+    public static int statusId()
     {
         return 1;
     }
 
-    public static int userIdSinceVersion()
+    public static int statusSinceVersion()
     {
         return 0;
     }
 
-    public static int userIdEncodingOffset()
+    public static int statusEncodingOffset()
     {
         return 0;
     }
 
-    public static int userIdEncodingLength()
+    public static int statusEncodingLength()
     {
-        return 8;
+        return 1;
     }
 
-    public static String userIdMetaAttribute(final MetaAttribute metaAttribute)
+    public static String statusMetaAttribute(final MetaAttribute metaAttribute)
     {
         if (MetaAttribute.PRESENCE == metaAttribute)
         {
@@ -169,48 +169,38 @@ public final class MatchDecoder
         return "";
     }
 
-    public static long userIdNullValue()
+    public short statusRaw()
     {
-        return 0xffffffffffffffffL;
+        return ((short)(buffer.getByte(offset + 0) & 0xFF));
     }
 
-    public static long userIdMinValue()
+    public JoinStatus status()
     {
-        return 0x0L;
-    }
-
-    public static long userIdMaxValue()
-    {
-        return 0xfffffffffffffffeL;
-    }
-
-    public long userId()
-    {
-        return buffer.getLong(offset + 0, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return JoinStatus.get(((short)(buffer.getByte(offset + 0) & 0xFF)));
     }
 
 
-    public static int gameModeId()
+    public static int rejectionReasonId()
     {
         return 2;
     }
 
-    public static int gameModeSinceVersion()
+    public static int rejectionReasonSinceVersion()
     {
         return 0;
     }
 
-    public static int gameModeEncodingOffset()
+    public static int rejectionReasonEncodingOffset()
     {
-        return 8;
+        return 1;
     }
 
-    public static int gameModeEncodingLength()
+    public static int rejectionReasonEncodingLength()
     {
-        return 4;
+        return 1;
     }
 
-    public static String gameModeMetaAttribute(final MetaAttribute metaAttribute)
+    public static String rejectionReasonMetaAttribute(final MetaAttribute metaAttribute)
     {
         if (MetaAttribute.PRESENCE == metaAttribute)
         {
@@ -220,14 +210,65 @@ public final class MatchDecoder
         return "";
     }
 
-    public int gameModeRaw()
+    public short rejectionReasonRaw()
     {
-        return buffer.getInt(offset + 8, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return ((short)(buffer.getByte(offset + 1) & 0xFF));
     }
 
-    public GameMode gameMode()
+    public JoinRejectionReason rejectionReason()
     {
-        return GameMode.get(buffer.getInt(offset + 8, java.nio.ByteOrder.LITTLE_ENDIAN));
+        return JoinRejectionReason.get(((short)(buffer.getByte(offset + 1) & 0xFF)));
+    }
+
+
+    public static int lobbyIdId()
+    {
+        return 3;
+    }
+
+    public static int lobbyIdSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int lobbyIdEncodingOffset()
+    {
+        return 2;
+    }
+
+    public static int lobbyIdEncodingLength()
+    {
+        return 4;
+    }
+
+    public static String lobbyIdMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public static long lobbyIdNullValue()
+    {
+        return 4294967295L;
+    }
+
+    public static long lobbyIdMinValue()
+    {
+        return 0L;
+    }
+
+    public static long lobbyIdMaxValue()
+    {
+        return 4294967294L;
+    }
+
+    public long lobbyId()
+    {
+        return (buffer.getInt(offset + 2, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
     }
 
 
@@ -238,7 +279,7 @@ public final class MatchDecoder
             return "";
         }
 
-        final MatchDecoder decoder = new MatchDecoder();
+        final ExecutionReportDecoder decoder = new ExecutionReportDecoder();
         decoder.wrap(buffer, initialOffset, actingBlockLength, actingVersion);
 
         return decoder.appendTo(new StringBuilder()).toString();
@@ -253,7 +294,7 @@ public final class MatchDecoder
 
         final int originalLimit = limit();
         limit(initialOffset + actingBlockLength);
-        builder.append("[match](sbeTemplateId=");
+        builder.append("[ExecutionReport](sbeTemplateId=");
         builder.append(TEMPLATE_ID);
         builder.append("|sbeSchemaId=");
         builder.append(SCHEMA_ID);
@@ -272,18 +313,21 @@ public final class MatchDecoder
         }
         builder.append(BLOCK_LENGTH);
         builder.append("):");
-        builder.append("userId=");
-        builder.append(this.userId());
+        builder.append("status=");
+        builder.append(this.status());
         builder.append('|');
-        builder.append("gameMode=");
-        builder.append(this.gameMode());
+        builder.append("rejectionReason=");
+        builder.append(this.rejectionReason());
+        builder.append('|');
+        builder.append("lobbyId=");
+        builder.append(this.lobbyId());
 
         limit(originalLimit);
 
         return builder;
     }
     
-    public MatchDecoder sbeSkip()
+    public ExecutionReportDecoder sbeSkip()
     {
         sbeRewind();
 

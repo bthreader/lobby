@@ -1,17 +1,17 @@
-package lobby.matching.engine;
+package lobby.matching.engine.domain;
 
+import lobby.matching.engine.ClientResponder;
 import lobby.message.codecs.GameMode;
-import lobby.message.codecs.MatchResultEncoder;
-import lobby.message.codecs.MessageHeaderEncoder;
+import lobby.message.codecs.JoinRejectionReason;
 import org.agrona.collections.ArrayListUtil;
 import org.agrona.collections.Int2ObjectHashMap;
-import org.agrona.concurrent.UnsafeBuffer;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
 
 public class LobbiesImpl implements Lobbies {
+    private final ClientResponder clientResponder;
+
     /**
      * TODO could perform some bid ask type optimizations by storing the pointer
      * to the first index with a free space.
@@ -25,14 +25,18 @@ public class LobbiesImpl implements Lobbies {
     private final ArrayList<Lobby> parties = new ArrayList<>();
 
     private final Map<Integer, LobbyIndex> lobbyIdToLobbyIndex = new Int2ObjectHashMap<>();
-    private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
-    private final MatchResultEncoder matchResultEncoder = new MatchResultEncoder();
 
     /**
      * The index of the next lobby. Used to create auto increment style indices. Indices are not
      * reclaimed upon lobby deletion.
+     * <p>
+     * TODO can reserve a value for null representation, i.e. start from 1
      */
     private int lobbyId = 0;
+
+    public LobbiesImpl(final ClientResponder clientResponder) {
+        this.clientResponder = clientResponder;
+    }
 
 
     /**
@@ -43,15 +47,11 @@ public class LobbiesImpl implements Lobbies {
         final int resultLobbyId = LobbiesUtils.searchAndFill(1, getLobbiesForGameMode(gameMode));
 
         if (resultLobbyId == LobbiesUtils.NO_MATCH) {
-            // TODO Handle
+            clientResponder.joinReject(JoinRejectionReason.ALL_LOBBIES_FULL);
             return;
         }
 
-        // TODO put the below in a client responder
-        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(128);
-        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
-
-        matchResultEncoder.wrapAndApplyHeader(directBuffer, 0, messageHeaderEncoder);
+        clientResponder.joinFilled(resultLobbyId);
     }
 
     /**
@@ -62,7 +62,7 @@ public class LobbiesImpl implements Lobbies {
         final LobbyIndex lobbyIndex = lobbyIdToLobbyIndex.get(lobbyId);
 
         if (lobbyIndex == null) {
-            // TODO handle
+            clientResponder.joinReject(JoinRejectionReason.UNKNOWN_LOBBY);
             return;
         }
 
@@ -74,12 +74,11 @@ public class LobbiesImpl implements Lobbies {
                                                                      && lobby.getId() != lobbyId);
 
         if (resultLobbyId == LobbiesUtils.NO_MATCH) {
-            // TODO handle
-            // Send no match -> share response with joinLobbyIfMatch
+            clientResponder.joinReject(JoinRejectionReason.ALL_LOBBIES_FULL);
+            return;
         }
 
-        // TODO handle
-        // Send positive result
+        clientResponder.joinFilled(resultLobbyId);
     }
 
     /**
@@ -97,8 +96,8 @@ public class LobbiesImpl implements Lobbies {
      * {@inheritDoc}
      */
     @Override
-    public void deleteLobby(final int id) {
-        final LobbyIndex lobbyIndex = lobbyIdToLobbyIndex.get(id);
+    public void deleteLobby(final int lobbyId) {
+        final LobbyIndex lobbyIndex = lobbyIdToLobbyIndex.get(lobbyId);
 
         if (lobbyIndex == null) {
             // TODO handle

@@ -2,11 +2,11 @@
 package lobby.message.codecs;
 
 @SuppressWarnings("all")
-public enum GameMode
+public enum JoinStatus
 {
-    CAPTURE_THE_FLAG((short)1),
+    FILLED((short)0),
 
-    FREE_FOR_ALL((short)2),
+    REJECTED((short)1),
 
     /**
      * To be used to represent not present or null.
@@ -15,7 +15,7 @@ public enum GameMode
 
     private final short value;
 
-    GameMode(final short value)
+    JoinStatus(final short value)
     {
         this.value = value;
     }
@@ -36,12 +36,12 @@ public enum GameMode
      * @param value encoded to be looked up.
      * @return the enum value representing the value.
      */
-    public static GameMode get(final short value)
+    public static JoinStatus get(final short value)
     {
         switch (value)
         {
-            case 1: return CAPTURE_THE_FLAG;
-            case 2: return FREE_FOR_ALL;
+            case 0: return FILLED;
+            case 1: return REJECTED;
             case 255: return NULL_VAL;
         }
 

@@ -5,19 +5,19 @@ import org.agrona.MutableDirectBuffer;
 
 
 /**
- * A request to place a user in any lobby matching their criteria
+ * The result of a request
  */
 @SuppressWarnings("all")
-public final class MatchEncoder
+public final class ExecutionReportEncoder
 {
-    public static final int BLOCK_LENGTH = 12;
+    public static final int BLOCK_LENGTH = 6;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
     public static final String SEMANTIC_VERSION = "0.1";
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final MatchEncoder parentMessage = this;
+    private final ExecutionReportEncoder parentMessage = this;
     private MutableDirectBuffer buffer;
     private int initialOffset;
     private int offset;
@@ -63,7 +63,7 @@ public final class MatchEncoder
         return offset;
     }
 
-    public MatchEncoder wrap(final MutableDirectBuffer buffer, final int offset)
+    public ExecutionReportEncoder wrap(final MutableDirectBuffer buffer, final int offset)
     {
         if (buffer != this.buffer)
         {
@@ -76,7 +76,7 @@ public final class MatchEncoder
         return this;
     }
 
-    public MatchEncoder wrapAndApplyHeader(
+    public ExecutionReportEncoder wrapAndApplyHeader(
         final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder)
     {
         headerEncoder
@@ -104,27 +104,27 @@ public final class MatchEncoder
         this.limit = limit;
     }
 
-    public static int userIdId()
+    public static int statusId()
     {
         return 1;
     }
 
-    public static int userIdSinceVersion()
+    public static int statusSinceVersion()
     {
         return 0;
     }
 
-    public static int userIdEncodingOffset()
+    public static int statusEncodingOffset()
     {
         return 0;
     }
 
-    public static int userIdEncodingLength()
+    public static int statusEncodingLength()
     {
-        return 8;
+        return 1;
     }
 
-    public static String userIdMetaAttribute(final MetaAttribute metaAttribute)
+    public static String statusMetaAttribute(final MetaAttribute metaAttribute)
     {
         if (MetaAttribute.PRESENCE == metaAttribute)
         {
@@ -134,49 +134,33 @@ public final class MatchEncoder
         return "";
     }
 
-    public static long userIdNullValue()
+    public ExecutionReportEncoder status(final JoinStatus value)
     {
-        return 0xffffffffffffffffL;
-    }
-
-    public static long userIdMinValue()
-    {
-        return 0x0L;
-    }
-
-    public static long userIdMaxValue()
-    {
-        return 0xfffffffffffffffeL;
-    }
-
-    public MatchEncoder userId(final long value)
-    {
-        buffer.putLong(offset + 0, value, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putByte(offset + 0, (byte)value.value());
         return this;
     }
 
-
-    public static int gameModeId()
+    public static int rejectionReasonId()
     {
         return 2;
     }
 
-    public static int gameModeSinceVersion()
+    public static int rejectionReasonSinceVersion()
     {
         return 0;
     }
 
-    public static int gameModeEncodingOffset()
+    public static int rejectionReasonEncodingOffset()
     {
-        return 8;
+        return 1;
     }
 
-    public static int gameModeEncodingLength()
+    public static int rejectionReasonEncodingLength()
     {
-        return 4;
+        return 1;
     }
 
-    public static String gameModeMetaAttribute(final MetaAttribute metaAttribute)
+    public static String rejectionReasonMetaAttribute(final MetaAttribute metaAttribute)
     {
         if (MetaAttribute.PRESENCE == metaAttribute)
         {
@@ -186,11 +170,63 @@ public final class MatchEncoder
         return "";
     }
 
-    public MatchEncoder gameMode(final GameMode value)
+    public ExecutionReportEncoder rejectionReason(final JoinRejectionReason value)
     {
-        buffer.putInt(offset + 8, value.value(), java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putByte(offset + 1, (byte)value.value());
         return this;
     }
+
+    public static int lobbyIdId()
+    {
+        return 3;
+    }
+
+    public static int lobbyIdSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int lobbyIdEncodingOffset()
+    {
+        return 2;
+    }
+
+    public static int lobbyIdEncodingLength()
+    {
+        return 4;
+    }
+
+    public static String lobbyIdMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public static long lobbyIdNullValue()
+    {
+        return 4294967295L;
+    }
+
+    public static long lobbyIdMinValue()
+    {
+        return 0L;
+    }
+
+    public static long lobbyIdMaxValue()
+    {
+        return 4294967294L;
+    }
+
+    public ExecutionReportEncoder lobbyId(final long value)
+    {
+        buffer.putInt(offset + 2, (int)value, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return this;
+    }
+
 
     public String toString()
     {
@@ -209,7 +245,7 @@ public final class MatchEncoder
             return builder;
         }
 
-        final MatchDecoder decoder = new MatchDecoder();
+        final ExecutionReportDecoder decoder = new ExecutionReportDecoder();
         decoder.wrap(buffer, initialOffset, BLOCK_LENGTH, SCHEMA_VERSION);
 
         return decoder.appendTo(builder);
