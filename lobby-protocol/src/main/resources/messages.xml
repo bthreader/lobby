@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   package="lobby.protocol.codecs"
+                   id="1"
+                   version="1"
+                   semanticVersion="0.1"
+                   description="Lobby SBE Messages">
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+        <composite name="varStringEncoding">
+            <type name="length" primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData" primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
+        </composite>
+        <composite name="groupSizeEncoding" description="Repeating group dimensions">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup" primitiveType="uint16"/>
+        </composite>
+
+        <enum name="GameMode" encodingType="uint8">
+            <validValue name="CAPTURE_THE_FLAG">1</validValue>
+            <validValue name="FREE_FOR_ALL">2</validValue>
+        </enum>
+
+        <enum name="ExecutionStatus" encodingType="uint8">
+            <validValue name="SUCCESS">0</validValue>
+            <validValue name="FAILURE">1</validValue>
+        </enum>
+
+        <enum name="ExecutionFailureReason" encodingType="uint8">
+            <validValue name="UNKNOWN_LOBBY">0</validValue>
+            <validValue name="ALL_LOBBIES_FULL">1</validValue>
+        </enum>
+
+        <enum name="MessageRejectionReason" encodingType="uint8">
+            <validValue name="MESSAGE_TOO_SHORT">0</validValue>
+            <validValue name="UNKNOWN_MESSAGE_TEMPLATE">1</validValue>
+        </enum>
+
+        <composite name="MatchOptions">
+            <ref name="gameMode" type="GameMode"/>
+        </composite>
+    </types>
+
+    <!-- Responses -->
+    <sbe:message name="ExecutionReport" id="1" description="The result of a request">
+        <field name="status" id="1" type="ExecutionStatus"/>
+        <field name="failureReason" id="2" type="ExecutionFailureReason"/>
+        <field name="lobbyId"
+               id="3"
+               type="uint32"
+               description="The id of the lobby joined for a successful match or merge request, null in all other cases"/>
+    </sbe:message>
+
+    <sbe:message name="MessageRejection"
+                 id="2"
+                 description="Issued when a message is received but cannot be properly processed due to a session-level rule violation">
+        <field name="rejectionReason" id="1" type="MessageRejectionReason"/>
+    </sbe:message>
+
+    <!-- Requests -->
+    <sbe:message name="MatchRequest"
+                 id="3"
+                 description="A request to place a user into a lobby matching some criteria">
+        <field name="matchOptions" id="1" type="MatchOptions" description="The criteria for the match"/>
+    </sbe:message>
+
+    <sbe:message name="MergeRequest"
+                 id="4"
+                 description="A request to merge the lobby with `lobbyId` into another that matches some criteria">
+        <field name="lobbyId" id="1" type="uint32"/>
+        <field name="matchOptions" id="2" type="MatchOptions" description="The criteria for the match"/>
+    </sbe:message>
+
+</sbe:messageSchema>

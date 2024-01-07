@@ -1,5 +1,8 @@
 package lobby.matching.engine.domain;
 
+import lombok.Getter;
+
+@Getter
 public class Lobby {
     public static final int MAX_USERS = 12;
     private final int id;
@@ -25,11 +28,4 @@ public class Lobby {
         throw new IllegalCallerException("Lobby is empty, can't remove users");
     }
 
-    public int getUsers() {
-        return users;
-    }
-
-    public int getId() {
-        return id;
-    }
 }

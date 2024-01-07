@@ -1,14 +1,18 @@
 package lobby.matching.engine.domain;
 
-import lobby.matching.engine.ClientResponder;
-import lobby.message.codecs.GameMode;
-import lobby.message.codecs.JoinRejectionReason;
+import lobby.matching.engine.infra.ClientResponder;
+import lobby.protocol.MatchOptions;
+import lobby.protocol.codecs.ExecutionFailureReason;
+import lobby.protocol.codecs.GameMode;
 import org.agrona.collections.ArrayListUtil;
 import org.agrona.collections.Int2ObjectHashMap;
 
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * A container for all the (mutable) state relating to lobbies.
+ */
 public class LobbiesImpl implements Lobbies {
     private final ClientResponder clientResponder;
 
@@ -21,7 +25,12 @@ public class LobbiesImpl implements Lobbies {
      */
     private final ArrayList<Lobby> captureTheFlagLobbies = new ArrayList<>();
     private final ArrayList<Lobby> freeForAllLobbies = new ArrayList<>();
-    /** A "party" is a lobby that has users but the game mode is undecided */
+    /**
+     * A "party" is a special case of lobby which will never play a game.
+     * <p>
+     * It serves as a holding place for players before their party gets merged with a non-party
+     * lobby.
+     */
     private final ArrayList<Lobby> parties = new ArrayList<>();
 
     private final Map<Integer, LobbyIndex> lobbyIdToLobbyIndex = new Int2ObjectHashMap<>();
@@ -30,55 +39,60 @@ public class LobbiesImpl implements Lobbies {
      * The index of the next lobby. Used to create auto increment style indices. Indices are not
      * reclaimed upon lobby deletion.
      * <p>
-     * TODO can reserve a value for null representation, i.e. start from 1
+     * TODO can reserve a value for null representation, i.e. start from 1.
      */
     private int lobbyId = 0;
 
+    /**
+     * Creates a container for all the (mutable) state relating to lobbies.
+     *
+     * @param clientResponder the responder used to send results back to the client
+     */
     public LobbiesImpl(final ClientResponder clientResponder) {
         this.clientResponder = clientResponder;
     }
 
-
     /**
      * {@inheritDoc}
      */
     @Override
-    public void joinLobbyIfMatch(final GameMode gameMode) {
-        final int resultLobbyId = LobbiesUtils.searchAndFill(1, getLobbiesForGameMode(gameMode));
+    public void joinLobbyIfMatch(final MatchOptions matchOptions) {
+        final int resultLobbyId = LobbiesUtils.searchAndFill(1,
+                                                             getLobbiesForGameMode(matchOptions.gameMode()));
 
         if (resultLobbyId == LobbiesUtils.NO_MATCH) {
-            clientResponder.joinReject(JoinRejectionReason.ALL_LOBBIES_FULL);
+            clientResponder.executionFailure(ExecutionFailureReason.ALL_LOBBIES_FULL);
             return;
         }
 
-        clientResponder.joinFilled(resultLobbyId);
+        clientResponder.executionSuccess(resultLobbyId);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void mergeLobbyIfMatch(final int lobbyId, final GameMode gameMode) {
+    public void mergeLobbyIfMatch(final int lobbyId, final MatchOptions matchOptions) {
         final LobbyIndex lobbyIndex = lobbyIdToLobbyIndex.get(lobbyId);
 
         if (lobbyIndex == null) {
-            clientResponder.joinReject(JoinRejectionReason.UNKNOWN_LOBBY);
+            clientResponder.executionFailure(ExecutionFailureReason.UNKNOWN_LOBBY);
             return;
         }
 
         final int resultLobbyId = LobbiesUtils.searchAndFill(getLobbyFromLobbyIndex(lobbyIndex).getUsers(),
-                                                             getLobbiesForGameMode(gameMode),
+                                                             getLobbiesForGameMode(matchOptions.gameMode()),
                                                              // Don't merge into an empty lobby
                                                              // Don't merge into the same lobby we're in now
                                                              (lobby) -> lobby.getUsers() > 0
                                                                      && lobby.getId() != lobbyId);
 
         if (resultLobbyId == LobbiesUtils.NO_MATCH) {
-            clientResponder.joinReject(JoinRejectionReason.ALL_LOBBIES_FULL);
+            clientResponder.executionFailure(ExecutionFailureReason.ALL_LOBBIES_FULL);
             return;
         }
 
-        clientResponder.joinFilled(resultLobbyId);
+        clientResponder.executionSuccess(resultLobbyId);
     }
 
     /**
@@ -86,6 +100,7 @@ public class LobbiesImpl implements Lobbies {
      */
     @Override
     public void createLobby(final GameMode gameMode) {
+        // TODO some limit on amount of lobbies you can create base on uint32
         getLobbiesForGameMode(gameMode).add(new Lobby(lobbyId));
         final int arrayIndex = getLobbiesForGameMode(gameMode).size() - 1;
         lobbyIdToLobbyIndex.put(lobbyId, new LobbyIndex(gameMode, arrayIndex));

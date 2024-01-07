@@ -31,8 +31,9 @@ public class LobbiesUtils {
      * spaces and a provided predicate. If a match is found, the {@code slots} are taken from the
      * lobby and the id of that lobby is returned. Otherwise, -1 ({@code NO_MATCH}) is returned.
      *
-     * @param slots   number of spaces required in the lobby
-     * @param lobbies the lobbies to search through
+     * @param slots          number of spaces required in the lobby
+     * @param lobbies        the lobbies to search through
+     * @param lobbyPredicate only return lobbies that test true
      * @return the id of the lobby that the user(s) got allocated to, -1 ({@code NO_MATCH}) if zero
      * lobbies meeting the criteria were found.
      */

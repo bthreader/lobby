@@ -1,26 +1,27 @@
 package lobby.matching.engine.domain;
 
-import lobby.message.codecs.GameMode;
+import lobby.protocol.MatchOptions;
+import lobby.protocol.codecs.GameMode;
 
 /**
  * A container for all the (mutable) state relating to lobbies.
  */
 public interface Lobbies {
     /**
-     * Attempts to fill a single lobby with a single user.
+     * Attempt to fill a single lobby with a single user.
      *
-     * @param gameMode the type of game being requested
+     * @param matchOptions the criteria for the match
      */
-    void joinLobbyIfMatch(GameMode gameMode);
+    void joinLobbyIfMatch(MatchOptions matchOptions);
 
     /**
-     * Attempts to put the users in the lobby with {@code lobbyId} into another lobby (with
-     * {@code gameMode}) that contains at least one other user.
+     * Attempt to put the users in the lobby with {@code lobbyId} into another lobby that matches
+     * some criteria.
      *
-     * @param lobbyId  the id of the lobby the users are currently in
-     * @param gameMode the game mode of the lobby to merge into
+     * @param lobbyId      the id of the lobby the users are currently in
+     * @param matchOptions the criteria for the match
      */
-    void mergeLobbyIfMatch(int lobbyId, GameMode gameMode);
+    void mergeLobbyIfMatch(int lobbyId, MatchOptions matchOptions);
 
     /**
      * Creates a new empty lobby.
