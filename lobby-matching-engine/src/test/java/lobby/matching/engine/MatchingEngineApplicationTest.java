@@ -5,9 +5,9 @@ package lobby.matching.engine;
 
 import org.junit.jupiter.api.Test;
 
-class AppTest {
+class MatchingEngineApplicationTest {
     @Test
     void appHasAGreeting() {
-        final App classUnderTest = new App();
+        final MatchingEngineApplication classUnderTest = new MatchingEngineApplication();
     }
 }

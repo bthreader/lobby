@@ -12,7 +12,7 @@ public interface Lobbies {
      *
      * @param matchOptions the criteria for the match
      */
-    void joinLobbyIfMatch(MatchOptions matchOptions);
+    void joinLobbyIfMatch(long userId, MatchOptions matchOptions);
 
     /**
      * Attempt to put the users in the lobby with {@code lobbyId} into another lobby that matches
@@ -21,7 +21,7 @@ public interface Lobbies {
      * @param lobbyId      the id of the lobby the users are currently in
      * @param matchOptions the criteria for the match
      */
-    void mergeLobbyIfMatch(int lobbyId, MatchOptions matchOptions);
+    void mergeLobbyIfMatch(long lobbyId, MatchOptions matchOptions);
 
     /**
      * Creates a new empty lobby.
@@ -35,5 +35,5 @@ public interface Lobbies {
      *
      * @param lobbyId the id of the lobby
      */
-    void deleteLobby(int lobbyId);
+    void deleteLobby(long lobbyId);
 }

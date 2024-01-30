@@ -25,6 +25,13 @@ dependencies {
 
     // Protocol
     implementation(project(":lobby-protocol"))
+
+    // Logger
+    implementation(libs.slf4j)
+    implementation(libs.logback)
+
+    // Agrona
+    implementation(libs.agrona)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -36,7 +43,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass.set("lobby.gateway.App")
+    mainClass.set("lobby.gateway.GatewayApplication")
 }
 
 tasks.named<Test>("test") {

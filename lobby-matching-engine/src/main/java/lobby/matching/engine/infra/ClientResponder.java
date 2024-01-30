@@ -9,7 +9,7 @@ public interface ClientResponder {
      *
      * @param lobbyId has a different meaning depending on the initial request TODO
      */
-    void executionSuccess(int lobbyId);
+    void executionSuccess(long lobbyId);
 
     /**
      * Sends an execution report detailing that the requested action could not be completed.

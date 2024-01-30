@@ -58,7 +58,8 @@ public class IngressProcessor {
     private void match(final DirectBuffer buffer, final int offset) {
         matchRequestDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
         matchOptions.wrap(matchRequestDecoder.matchOptions());
-        lobbies.joinLobbyIfMatch(matchOptions);
+        LOGGER.error(matchOptions.gameMode().toString());
+        lobbies.joinLobbyIfMatch(1L, matchOptions);
     }
 
     private void merge(final DirectBuffer buffer, final int offset) {

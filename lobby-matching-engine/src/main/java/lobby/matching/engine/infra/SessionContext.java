@@ -2,6 +2,8 @@ package lobby.matching.engine.infra;
 
 import org.agrona.DirectBuffer;
 
+import java.net.SocketAddress;
+
 public interface SessionContext {
     /**
      * Replies to the caller.
@@ -11,4 +13,6 @@ public interface SessionContext {
      * @param length the length to read
      */
     void reply(DirectBuffer buffer, int offset, int length);
+
+    SocketAddress remoteAddress();
 }

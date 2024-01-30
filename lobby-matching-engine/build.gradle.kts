@@ -25,9 +25,13 @@ dependencies {
 
     // Logger
     implementation(libs.slf4j)
+    implementation(libs.logback)
 
     // Mockito
     testImplementation(libs.mockito)
+
+    // AssertJ
+    testImplementation(libs.assertj)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -39,7 +43,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass.set("lobby.matching.engine.App")
+    mainClass.set("lobby.matching.engine.MatchingEngineApplication")
 }
 
 tasks.named<Test>("test") {

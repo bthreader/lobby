@@ -1,6 +1,5 @@
-package lobby.matching.engine.domain.utils;
+package lobby.protocol;
 
-import lobby.protocol.MatchOptions;
 import lobby.protocol.codecs.GameMode;
 
 public record ImmutableMatchOptions(GameMode gameMode) implements MatchOptions {

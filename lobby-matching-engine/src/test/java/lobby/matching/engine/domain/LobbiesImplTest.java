@@ -1,7 +1,7 @@
 package lobby.matching.engine.domain;
 
-import lobby.matching.engine.domain.utils.ImmutableMatchOptions;
 import lobby.matching.engine.infra.ClientResponder;
+import lobby.protocol.ImmutableMatchOptions;
 import lobby.protocol.codecs.ExecutionFailureReason;
 import lobby.protocol.codecs.GameMode;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +28,7 @@ public class LobbiesImplTest {
     class lobbies {
         @Test
         void no_lobbies_on_start() {
-            lobbies.joinLobbyIfMatch(new ImmutableMatchOptions(GameMode.CAPTURE_THE_FLAG));
+            lobbies.joinLobbyIfMatch(1L, new ImmutableMatchOptions(GameMode.CAPTURE_THE_FLAG));
 
             verify(clientResponderMock).executionFailure(ExecutionFailureReason.ALL_LOBBIES_FULL);
         }
@@ -45,7 +45,7 @@ public class LobbiesImplTest {
             lobbies.createLobby(gameMode);
 
             // When we request to match
-            lobbies.joinLobbyIfMatch(new ImmutableMatchOptions(gameMode));
+            lobbies.joinLobbyIfMatch(1L, new ImmutableMatchOptions(gameMode));
 
             // Then the client should be informed that there was a match
             verify(clientResponderMock).executionSuccess(0);

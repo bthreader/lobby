@@ -1,50 +1,48 @@
 package lobby.matching.engine.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 import java.util.function.Predicate;
 
 public class LobbiesUtils {
-    public static final int NO_MATCH = -1;
+    private static final SearchResult result = new SearchResult();
 
     /**
-     * Performs a linear walk through the lobbies looking for a match based on sufficient free
-     * spaces. If a match is found, the {@code slots} are taken from the lobby and the id of that
-     * lobby is returned. Otherwise, -1 ({@code NO_MATCH}) is returned.
+     * Performs a linear walk through the lobbies looking for a match based on a provided
+     * predicate.
      *
-     * @param slots   number of spaces required in the lobby
-     * @param lobbies the lobbies to search through
-     * @return the id of the lobby that the user(s) got allocated to, -1 ({@code NO_MATCH}) if zero
-     * lobbies meeting the criteria were found.
+     * @param lobbies        the lobbies to search through
+     * @param lobbyPredicate only return a lobby that tests true
+     * @return the lobby that the fulfills the space requirements, the null lobby otherwise
      */
-    public static int searchAndFill(final int slots, final List<Lobby> lobbies) {
-        for (final Lobby lobby : lobbies) {
-            if (lobby.getUsers() + slots <= Lobby.MAX_USERS) {
-                lobby.addUsers(slots);
-                return lobby.getId();
+    public static SearchResult search(final List<Lobby> lobbies,
+                                      final Predicate<Lobby> lobbyPredicate) {
+        for (int index = 0; index < lobbies.size(); index++) {
+            final Lobby lobby = lobbies.get(index);
+            if (lobbyPredicate.test(lobby)) {
+                result.setLobby(lobby);
+                result.setIndex(index);
+                return result;
             }
         }
-        return NO_MATCH;
+        return result.noMatch();
     }
 
-    /**
-     * Performs a linear walk through the lobbies looking for a match based on sufficient free
-     * spaces and a provided predicate. If a match is found, the {@code slots} are taken from the
-     * lobby and the id of that lobby is returned. Otherwise, -1 ({@code NO_MATCH}) is returned.
-     *
-     * @param slots          number of spaces required in the lobby
-     * @param lobbies        the lobbies to search through
-     * @param lobbyPredicate only return lobbies that test true
-     * @return the id of the lobby that the user(s) got allocated to, -1 ({@code NO_MATCH}) if zero
-     * lobbies meeting the criteria were found.
-     */
-    public static int searchAndFill(final int slots, final List<Lobby> lobbies,
-                                    final Predicate<Lobby> lobbyPredicate) {
-        for (final Lobby lobby : lobbies) {
-            if (lobby.getUsers() + slots <= Lobby.MAX_USERS && lobbyPredicate.test(lobby)) {
-                lobby.addUsers(slots);
-                return lobby.getId();
-            }
+    @Setter
+    @Getter
+    public static class SearchResult {
+        private Lobby lobby;
+        private int index;
+
+        public boolean isNoMatch() {
+            return index == -1;
         }
-        return NO_MATCH;
+
+        public SearchResult noMatch() {
+            index = -1;
+            return this;
+        }
     }
 }

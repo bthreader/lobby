@@ -3,9 +3,12 @@ package lobby.matching.engine.infra;
 import lobby.protocol.codecs.*;
 import lombok.RequiredArgsConstructor;
 import org.agrona.ExpandableDirectByteBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RequiredArgsConstructor
 public class ClientResponderImpl implements ClientResponder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientResponderImpl.class);
     private final SessionContext context;
     private final ExpandableDirectByteBuffer buffer = new ExpandableDirectByteBuffer(1024);
 
@@ -18,7 +21,7 @@ public class ClientResponderImpl implements ClientResponder {
      * {@inheritDoc}
      */
     @Override
-    public void executionSuccess(final int lobbyId) {
+    public void executionSuccess(final long lobbyId) {
         executionReportEncoder.wrapAndApplyHeader(buffer, 0, messageHeaderEncoder);
         executionReportEncoder.status(ExecutionStatus.SUCCESS);
         executionReportEncoder.lobbyId(lobbyId);
@@ -26,7 +29,9 @@ public class ClientResponderImpl implements ClientResponder {
         context.reply(buffer,
                       0,
                       messageHeaderEncoder.encodedLength()
-                              + executionReportEncoder.encodedLength());
+                      + executionReportEncoder.encodedLength());
+
+        LOGGER.info("Sent execution success to {}", context.remoteAddress());
     }
 
     /**
@@ -42,7 +47,9 @@ public class ClientResponderImpl implements ClientResponder {
         context.reply(buffer,
                       0,
                       messageHeaderEncoder.encodedLength()
-                              + executionReportEncoder.encodedLength());
+                      + executionReportEncoder.encodedLength());
+
+        LOGGER.info("Sent execution failure to {}", context.remoteAddress());
     }
 
     /**
@@ -56,6 +63,8 @@ public class ClientResponderImpl implements ClientResponder {
         context.reply(buffer,
                       0,
                       messageHeaderEncoder.encodedLength()
-                              + messageRejectionEncoder.encodedLength());
+                      + messageRejectionEncoder.encodedLength());
+
+        LOGGER.info("Sent reject message to {}", context.remoteAddress());
     }
 }
