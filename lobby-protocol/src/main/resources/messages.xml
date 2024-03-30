@@ -60,6 +60,7 @@
                  id="2"
                  description="Issued when a message is received but cannot be properly processed due to a session-level rule violation">
         <field name="rejectionReason" id="1" type="MessageRejectionReason"/>
+        <!-- TODO put the params in here that actually caused the error in the first place -->
     </sbe:message>
 
     <!-- Requests -->

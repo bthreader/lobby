@@ -48,7 +48,7 @@ public class LobbiesImplTest {
             lobbies.joinLobbyIfMatch(1L, new ImmutableMatchOptions(gameMode));
 
             // Then the client should be informed that there was a match
-            verify(clientResponderMock).executionSuccess(0);
+            verify(clientResponderMock).executionSuccess(1L);
         }
     }
 }

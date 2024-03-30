@@ -1,9 +1,8 @@
 package lobby.matching.engine.infra;
 
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.agrona.DirectBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -11,19 +10,21 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 @Setter
+@Slf4j
 public class SessionContextImpl implements SessionContext {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionContextImpl.class);
     private SelectionKey selectionKey;
     private SocketChannel client;
 
     @Override
     public void reply(final DirectBuffer buffer, final int offset, final int length) {
         try {
-            final int bytesWritten = client.write(buffer.byteBuffer());
+            final int bytesWritten = client.write(buffer.byteBuffer()
+                                                          .position(offset)
+                                                          .limit(length));
 
             // Slow client -> disconnect them
             if (bytesWritten < length) {
-                LOGGER.warn("Disconnecting slow client {}", client.getRemoteAddress());
+                log.warn("Disconnecting slow client: {}", client.getRemoteAddress());
                 client.close();
                 selectionKey.cancel();
             }

@@ -31,7 +31,7 @@ public class ClientResponderImpl implements ClientResponder {
                       messageHeaderEncoder.encodedLength()
                       + executionReportEncoder.encodedLength());
 
-        LOGGER.info("Sent execution success to {}", context.remoteAddress());
+        LOGGER.info("Sent execution success to client: {}", context.remoteAddress());
     }
 
     /**
@@ -46,10 +46,10 @@ public class ClientResponderImpl implements ClientResponder {
 
         context.reply(buffer,
                       0,
-                      messageHeaderEncoder.encodedLength()
+                      MessageHeaderEncoder.ENCODED_LENGTH
                       + executionReportEncoder.encodedLength());
 
-        LOGGER.info("Sent execution failure to {}", context.remoteAddress());
+        LOGGER.info("Sent execution failure to client: {}", context.remoteAddress());
     }
 
     /**
@@ -65,6 +65,6 @@ public class ClientResponderImpl implements ClientResponder {
                       messageHeaderEncoder.encodedLength()
                       + messageRejectionEncoder.encodedLength());
 
-        LOGGER.info("Sent reject message to {}", context.remoteAddress());
+        LOGGER.info("Sent reject message to client: {}", context.remoteAddress());
     }
 }

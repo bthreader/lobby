@@ -8,27 +8,31 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Lobby {
-    // TODO this could vary lobby to lobby
-    private final int maxUsers = 12;
+    private final int maxUsers;
     @Getter
     private final long id;
-    private final Set<Long> users = HashSet.newHashSet(maxUsers);
+    private final Set<Long> users;
+    private final GameMode gameMode;
     private int numberOfUsers = 0;
-    private GameMode gameMode;
-
-    public Lobby(final long id) {
-        this.id = id;
-    }
 
     public Lobby(final long id, final GameMode gameMode) {
         this.id = id;
         this.gameMode = gameMode;
+
+        switch (gameMode) {
+            case FREE_FOR_ALL -> this.maxUsers = 8;
+            case CAPTURE_THE_FLAG -> this.maxUsers = 12;
+            default -> throw new IllegalArgumentException("null lobby not allowed");
+        }
+
+        this.users = HashSet.newHashSet(maxUsers);
     }
 
     public void addUser(final Long userId) {
-        if (isFull()) {
+        if (isNotFull()) {
             users.add(userId);
             numberOfUsers++;
+            return;
         }
         throw new IllegalCallerException("Lobby is full, can't add user");
     }
@@ -61,9 +65,7 @@ public class Lobby {
         return numberOfUsers != 0;
     }
 
-    public boolean isFull() {
-        return numberOfUsers != maxUsers;
-    }
+    public boolean isNotFull() { return numberOfUsers != maxUsers; }
 
     public boolean matches(final MatchOptions matchOptions) {
         return gameMode == matchOptions.gameMode();

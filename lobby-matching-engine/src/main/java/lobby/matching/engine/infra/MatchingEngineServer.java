@@ -1,10 +1,8 @@
 package lobby.matching.engine.infra;
 
-import lobby.matching.engine.MatchingEngineApplication;
+import lombok.extern.slf4j.Slf4j;
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,8 +10,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Iterator;
 
+@Slf4j
 public class MatchingEngineServer implements Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MatchingEngineApplication.class);
     private final Selector selector;
     private final ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
     private final DirectBuffer dBuffer = new UnsafeBuffer();
@@ -36,7 +34,7 @@ public class MatchingEngineServer implements Runnable {
         try (final ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
             serverSocketChannel.configureBlocking(false);
             serverSocketChannel.bind(new InetSocketAddress(port));
-            LOGGER.info("Bound to {}", port);
+            log.info("Bound to {}", port);
 
             try {
                 serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -77,7 +75,7 @@ public class MatchingEngineServer implements Runnable {
         }
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
-        LOGGER.info("Accepted connection from {}", client.getRemoteAddress());
+        log.info("Accepted connection from {}", client.getRemoteAddress());
     }
 
     private void read(final SelectionKey key) throws IOException {

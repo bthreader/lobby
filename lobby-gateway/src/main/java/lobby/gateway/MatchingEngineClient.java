@@ -17,4 +17,7 @@ public interface MatchingEngineClient {
      * @param matchOptions the criteria for the match
      */
     void mergeRequest(int lobbyId, MatchOptions matchOptions);
+
+    /** Shutdown the client */
+    void disconnect();
 }

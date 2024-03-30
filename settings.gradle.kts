@@ -1,5 +1,5 @@
 rootProject.name = "lobby"
-include("lobby-matching-engine", "lobby-protocol", "lobby-gateway")
+include("lobby-matching-engine", "lobby-protocol", "lobby-gateway", "lobby-core")
 
 dependencyResolutionManagement {
     versionCatalogs {

@@ -31,16 +31,16 @@ public class LobbiesImpl implements Lobbies {
      */
     @Override
     public void joinLobbyIfMatch(final long userId, final MatchOptions matchOptions) {
-        final LobbiesUtils.SearchResult result = LobbiesUtils.search(lobbies,
-                                                                     lobby -> !lobby.isFull()
-                                                                              && lobby.matches(
-                                                                             matchOptions));
+        final LobbySearchResult result = LobbiesUtils.search(lobbies,
+                                                             lobby -> lobby.isNotFull()
+                                                                      && lobby.matches(matchOptions));
 
         if (result.isNoMatch()) {
             clientResponder.executionFailure(ExecutionFailureReason.ALL_LOBBIES_FULL);
             return;
         }
 
+        // TODO what if the user is already in a lobby?
         result.getLobby().addUser(userId);
         userIdToLobbyIndex.put(userId, result.getIndex());
         clientResponder.executionSuccess(result.getLobby().getId());
@@ -58,7 +58,7 @@ public class LobbiesImpl implements Lobbies {
             return;
         }
 
-        final LobbiesUtils.SearchResult result = LobbiesUtils.search(lobbies, (lobby) ->
+        final LobbySearchResult result = LobbiesUtils.search(lobbies, lobby ->
                 lobby.isNotEmpty()
                 && lobby.getId() != lobbyId
                 && lobby.matches(matchOptions));
@@ -83,8 +83,29 @@ public class LobbiesImpl implements Lobbies {
     @Override
     public void createLobby(final GameMode gameMode) {
         final long lobbyId = lobbyIdGenerator.nextId();
-        lobbies.add(new Lobby(lobbyId));
+        lobbies.add(new Lobby(lobbyId, gameMode));
         lobbyIdToLobbyIndex.put(lobbyId, lobbies.size() - 1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void createLobby(final GameMode gameMode, final long userId) {
+        final long lobbyId = lobbyIdGenerator.nextId();
+        final Lobby lobby = new Lobby(lobbyId, gameMode);
+        lobbies.add(lobby);
+        lobbyIdToLobbyIndex.put(lobbyId, lobbies.size() - 1);
+
+        // Quit the lobby the user is currently if they are in one
+        final Integer existingLobbyIndex = userIdToLobbyIndex.get(userId);
+        if (existingLobbyIndex != null) {
+            lobbies.get(existingLobbyIndex).removeUser(userId);
+        }
+
+        // Add the user to the new lobby
+        lobby.addUser(userId);
+        userIdToLobbyIndex.put(userId, 111);
     }
 
     /**
@@ -110,7 +131,17 @@ public class LobbiesImpl implements Lobbies {
         ArrayListUtil.fastUnorderedRemove(lobbies, lobbyIndex);
     }
 
-    private long locateUser(final long userId) {
-        return lobbies.get(userIdToLobbyIndex.get(userId)).getId();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void locateUser(final long userId) {
+        final Integer lobbyIndex = userIdToLobbyIndex.get(userId);
+
+        if (lobbyIndex == null) {
+            //
+            return;
+        }
+        final long result = lobbies.get(lobbyIndex).getId();
     }
 }

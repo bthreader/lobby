@@ -1,20 +1,20 @@
 package lobby.matching.engine.infra;
 
+import lobby.core.DeMuxer;
 import lobby.matching.engine.domain.Lobbies;
 import lobby.matching.engine.domain.LobbiesImpl;
 import lobby.protocol.codecs.MatchRequestDecoder;
 import lobby.protocol.codecs.MergeRequestDecoder;
 import lobby.protocol.codecs.MessageHeaderDecoder;
 import lobby.protocol.codecs.MessageRejectionReason;
+import lombok.extern.slf4j.Slf4j;
 import org.agrona.DirectBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Demultiplexes messages from the clients to the appropriate handler.
+ * Demultiplexes messages from clients and sends then to the appropriate handler.
  */
-public class IngressProcessor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngressProcessor.class);
+@Slf4j
+public class IngressProcessor implements DeMuxer {
     private final ClientResponder clientResponder;
     private final Lobbies lobbies;
 
@@ -29,16 +29,9 @@ public class IngressProcessor {
         this.lobbies = new LobbiesImpl(clientResponder);
     }
 
-    /**
-     * Takes a message contained within a buffer and sends it to the appropriate handler.
-     *
-     * @param buffer the buffer containing the message
-     * @param offset in the supplied buffer to begin decoding
-     * @param length of the supplied buffer
-     */
     public void dispatch(final DirectBuffer buffer, final int offset, final int length) {
         if (length < MessageHeaderDecoder.ENCODED_LENGTH) {
-            LOGGER.error("Message too short, rejected.");
+            log.error("Message too short, rejected");
             clientResponder.rejectMessage(MessageRejectionReason.MESSAGE_TOO_SHORT);
             return;
         }
@@ -49,20 +42,23 @@ public class IngressProcessor {
             case MatchRequestDecoder.TEMPLATE_ID -> match(buffer, offset);
             case MergeRequestDecoder.TEMPLATE_ID -> merge(buffer, offset);
             default -> {
-                LOGGER.error("Unknown message template {}, rejected.", headerDecoder.templateId());
+                log.error("Unknown message template received: {}, rejected",
+                          headerDecoder.templateId());
                 clientResponder.rejectMessage(MessageRejectionReason.UNKNOWN_MESSAGE_TEMPLATE);
             }
         }
     }
 
     private void match(final DirectBuffer buffer, final int offset) {
+        log.info("Received match request");
         matchRequestDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
         matchOptions.wrap(matchRequestDecoder.matchOptions());
-        LOGGER.error(matchOptions.gameMode().toString());
-        lobbies.joinLobbyIfMatch(1L, matchOptions);
+        lobbies.joinLobbyIfMatch(1L // TODO
+                , matchOptions);
     }
 
     private void merge(final DirectBuffer buffer, final int offset) {
+        log.info("Received merge request");
         mergeRequestDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
         matchOptions.wrap(mergeRequestDecoder.matchOptions());
         lobbies.mergeLobbyIfMatch(1, // mergeRequestDecoder.lobbyId() TODO,

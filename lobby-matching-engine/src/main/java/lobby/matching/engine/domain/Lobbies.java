@@ -31,9 +31,24 @@ public interface Lobbies {
     void createLobby(GameMode gameMode);
 
     /**
+     * Creates a new lobby with one user, the one identified by {@code userId}.
+     *
+     * @param gameMode the type of game to be played in the lobby
+     * @param userId   the id of the user place in the lobby
+     */
+    void createLobby(GameMode gameMode, long userId);
+
+    /**
      * Removes a lobby, provided it's empty.
      *
      * @param lobbyId the id of the lobby
      */
     void deleteLobby(long lobbyId);
+
+    /**
+     * Finds the lobby of the user with the given {@code userId}.
+     *
+     * @param userId the id of the user to search for
+     */
+    void locateUser(long userId);
 }
