@@ -1,34 +1,27 @@
-package lobby.gateway;
+package lobby.gateway.matching.engine;
 
+import lobby.core.DeMuxer;
 import lobby.protocol.codecs.ExecutionReportDecoder;
 import lobby.protocol.codecs.ExecutionStatus;
 import lobby.protocol.codecs.MessageHeaderDecoder;
 import lobby.protocol.codecs.MessageRejectionDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.agrona.DirectBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Demultiplexes messages from clients and sends then to the appropriate handler.
  */
-public class IngressProcessor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngressProcessor.class);
-
+@Slf4j
+public class MatchingEngineResponseProcessor implements DeMuxer {
     // Decoders
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final ExecutionReportDecoder executionReportDecoder = new ExecutionReportDecoder();
     private final MessageRejectionDecoder messageRejectionDecoder = new MessageRejectionDecoder();
 
-    /**
-     * Takes a message contained within a buffer and sends it to the appropriate handler.
-     *
-     * @param buffer the buffer containing the message
-     * @param offset in the supplied buffer to begin decoding
-     * @param length of the supplied buffer
-     */
+    @Override
     public void dispatch(final DirectBuffer buffer, final int offset, final int length) {
         if (length < MessageHeaderDecoder.ENCODED_LENGTH) {
-            LOGGER.error("Message too short, rejected.");
+            log.error("Message too short, rejected");
             return;
         }
 
@@ -38,8 +31,8 @@ public class IngressProcessor {
             case ExecutionReportDecoder.TEMPLATE_ID -> logExecutionReport(buffer, offset);
             case MessageRejectionDecoder.TEMPLATE_ID -> logMessageRejection(buffer, offset);
             default -> {
-                LOGGER.error("Unknown message template received: {}, rejected",
-                             headerDecoder.templateId());
+                log.error("Unknown message template received: {}, rejected",
+                          headerDecoder.templateId());
             }
         }
     }
@@ -47,16 +40,16 @@ public class IngressProcessor {
     private void logExecutionReport(final DirectBuffer buffer, final int offset) {
         executionReportDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
         if (executionReportDecoder.status() == ExecutionStatus.FAILURE) {
-            LOGGER.info("Received execution report, execution failed with reason: {}",
-                        executionReportDecoder.failureReason());
+            log.info("Received execution report, execution failed with reason: {}",
+                     executionReportDecoder.failureReason());
             return;
         }
-        LOGGER.info("Received execution report, execution successful lobbyId: {}",
-                    executionReportDecoder.lobbyId());
+        log.info("Received execution report, execution successful lobbyId: {}",
+                 executionReportDecoder.lobbyId());
     }
 
     private void logMessageRejection(final DirectBuffer buffer, final int offset) {
         messageRejectionDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
-        LOGGER.info("Message rejected with reason: {}", messageRejectionDecoder.rejectionReason());
+        log.info("Message rejected with reason: {}", messageRejectionDecoder.rejectionReason());
     }
 }

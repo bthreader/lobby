@@ -10,7 +10,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public final class MatchRequestDecoder
 {
-    public static final int BLOCK_LENGTH = 1;
+    public static final int BLOCK_LENGTH = 9;
     public static final int TEMPLATE_ID = 3;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
@@ -182,6 +182,57 @@ public final class MatchRequestDecoder
         return matchOptions;
     }
 
+    public static int userIdId()
+    {
+        return 2;
+    }
+
+    public static int userIdSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int userIdEncodingOffset()
+    {
+        return 1;
+    }
+
+    public static int userIdEncodingLength()
+    {
+        return 8;
+    }
+
+    public static String userIdMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public static long userIdNullValue()
+    {
+        return -9223372036854775808L;
+    }
+
+    public static long userIdMinValue()
+    {
+        return -9223372036854775807L;
+    }
+
+    public static long userIdMaxValue()
+    {
+        return 9223372036854775807L;
+    }
+
+    public long userId()
+    {
+        return buffer.getLong(offset + 1, java.nio.ByteOrder.LITTLE_ENDIAN);
+    }
+
+
     public String toString()
     {
         if (null == buffer)
@@ -233,6 +284,9 @@ public final class MatchRequestDecoder
         {
             builder.append("null");
         }
+        builder.append('|');
+        builder.append("userId=");
+        builder.append(this.userId());
 
         limit(originalLimit);
 

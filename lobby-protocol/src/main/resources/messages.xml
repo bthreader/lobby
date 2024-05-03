@@ -34,6 +34,8 @@
         <enum name="ExecutionFailureReason" encodingType="uint8">
             <validValue name="UNKNOWN_LOBBY">0</validValue>
             <validValue name="ALL_LOBBIES_FULL">1</validValue>
+            <validValue name="USER_ALREADY_IN_LOBBY">2</validValue>
+            <validValue name="CANNOT_DELETE_NON_EMPTY_LOBBY">3</validValue>
         </enum>
 
         <enum name="MessageRejectionReason" encodingType="uint8">
@@ -53,7 +55,7 @@
         <field name="lobbyId"
                id="3"
                type="uint32"
-               description="The id of the lobby joined for a successful match or merge request, null in all other cases"/>
+               description="nullable (4294967295L)"/>
     </sbe:message>
 
     <sbe:message name="MessageRejection"
@@ -68,6 +70,7 @@
                  id="3"
                  description="A request to place a user into a lobby matching some criteria">
         <field name="matchOptions" id="1" type="MatchOptions" description="The criteria for the match"/>
+        <field name="userId" id="2" type="int64"/>
     </sbe:message>
 
     <sbe:message name="MergeRequest"

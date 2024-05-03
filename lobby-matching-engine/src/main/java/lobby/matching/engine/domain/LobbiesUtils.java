@@ -1,14 +1,16 @@
 package lobby.matching.engine.domain;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.List;
 import java.util.function.Predicate;
 
+@UtilityClass
 public class LobbiesUtils {
     private static final LobbySearchResult searchResult = LobbySearchResult.INSTANCE;
 
     /**
-     * Performs a linear walk through the lobbies looking for a match based on a provided
-     * predicate.
+     * Performs a linear walk through the lobbies looking for a match based on a provided predicate
      *
      * @param lobbies        the lobbies to search through
      * @param lobbyPredicate only return a lobby that tests true

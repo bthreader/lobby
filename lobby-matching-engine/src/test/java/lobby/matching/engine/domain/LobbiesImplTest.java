@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +32,21 @@ public class LobbiesImplTest {
             lobbies.joinLobbyIfMatch(1L, new ImmutableMatchOptions(GameMode.CAPTURE_THE_FLAG));
 
             verify(clientResponderMock).executionFailure(ExecutionFailureReason.ALL_LOBBIES_FULL);
+        }
+
+        @Test
+        void createLobby() {
+            lobbies.createLobby(GameMode.CAPTURE_THE_FLAG);
+
+            verify(clientResponderMock).executionSuccess(LobbyIdGenerator.FIRST_INDEX);
+        }
+
+        @Test
+        void deleteLobby() {
+            lobbies.createLobby(GameMode.CAPTURE_THE_FLAG);
+            lobbies.deleteLobby(LobbyIdGenerator.FIRST_INDEX);
+            verify(clientResponderMock, times(2))
+                    .executionSuccess(LobbyIdGenerator.FIRST_INDEX);
         }
     }
 

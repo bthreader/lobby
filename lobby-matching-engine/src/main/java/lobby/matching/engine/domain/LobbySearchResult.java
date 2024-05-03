@@ -3,9 +3,8 @@ package lobby.matching.engine.domain;
 import lombok.Getter;
 
 @Getter
-
 public class LobbySearchResult {
-    public static LobbySearchResult INSTANCE = new LobbySearchResult();
+    public static final LobbySearchResult INSTANCE = new LobbySearchResult();
     private Lobby lobby;
     private int index;
 

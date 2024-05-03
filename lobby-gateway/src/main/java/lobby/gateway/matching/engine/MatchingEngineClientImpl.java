@@ -1,4 +1,4 @@
-package lobby.gateway;
+package lobby.gateway.matching.engine;
 
 import lobby.protocol.MatchOptions;
 import lobby.protocol.codecs.MatchRequestEncoder;
@@ -17,7 +17,7 @@ import java.nio.channels.SocketChannel;
 public class MatchingEngineClientImpl implements MatchingEngineClient {
     private final SocketChannel client;
     private final MutableDirectBuffer buffer = new ExpandableDirectByteBuffer(1024);
-    private final IngressProcessor ingressProcessor = new IngressProcessor();
+    private final MatchingEngineResponseProcessor matchingEngineResponseProcessor = new MatchingEngineResponseProcessor();
 
     // Encoders
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
@@ -31,7 +31,7 @@ public class MatchingEngineClientImpl implements MatchingEngineClient {
             client.configureBlocking(true);
             log.info("Successfully connected to matching engine");
         } catch (final IOException e) {
-            log.info("Could not connect to the matching engine");
+            log.info("Could not connect to the matching engine: {}", e.getMessage());
             throw new RuntimeException();
         }
     }
@@ -57,7 +57,7 @@ public class MatchingEngineClientImpl implements MatchingEngineClient {
 
         try {
             client.read(buffer.byteBuffer().rewind());
-            ingressProcessor.dispatch(buffer, 0, buffer.capacity());
+            matchingEngineResponseProcessor.dispatch(buffer, 0, buffer.capacity());
         } catch (final IOException e) {
             log.info("Could not read from the matching engine");
             throw new RuntimeException(e);
@@ -86,7 +86,7 @@ public class MatchingEngineClientImpl implements MatchingEngineClient {
 
         try {
             client.read(buffer.byteBuffer().rewind());
-            ingressProcessor.dispatch(buffer, 0, buffer.capacity());
+            matchingEngineResponseProcessor.dispatch(buffer, 0, buffer.capacity());
         } catch (final IOException e) {
             log.info("Could not read from the matching engine");
             throw new RuntimeException(e);

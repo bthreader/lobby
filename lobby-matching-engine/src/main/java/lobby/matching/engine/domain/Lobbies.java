@@ -31,7 +31,7 @@ public interface Lobbies {
     void createLobby(GameMode gameMode);
 
     /**
-     * Creates a new lobby with one user, the one identified by {@code userId}.
+     * Creates a new lobby with one user identified by {@code userId}.
      *
      * @param gameMode the type of game to be played in the lobby
      * @param userId   the id of the user place in the lobby

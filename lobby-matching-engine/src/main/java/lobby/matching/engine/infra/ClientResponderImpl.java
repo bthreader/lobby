@@ -49,7 +49,7 @@ public class ClientResponderImpl implements ClientResponder {
                       MessageHeaderEncoder.ENCODED_LENGTH
                       + executionReportEncoder.encodedLength());
 
-        LOGGER.info("Sent execution failure to client: {}", context.remoteAddress());
+        LOGGER.info("Sent execution failure ({}) to client: {}", reason, context.remoteAddress());
     }
 
     /**

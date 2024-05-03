@@ -29,6 +29,7 @@ public class IngressProcessor implements DeMuxer {
         this.lobbies = new LobbiesImpl(clientResponder);
     }
 
+    @Override
     public void dispatch(final DirectBuffer buffer, final int offset, final int length) {
         if (length < MessageHeaderDecoder.ENCODED_LENGTH) {
             log.error("Message too short, rejected");
@@ -53,15 +54,13 @@ public class IngressProcessor implements DeMuxer {
         log.info("Received match request");
         matchRequestDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
         matchOptions.wrap(matchRequestDecoder.matchOptions());
-        lobbies.joinLobbyIfMatch(1L // TODO
-                , matchOptions);
+        lobbies.joinLobbyIfMatch(matchRequestDecoder.userId(), matchOptions);
     }
 
     private void merge(final DirectBuffer buffer, final int offset) {
         log.info("Received merge request");
         mergeRequestDecoder.wrapAndApplyHeader(buffer, offset, headerDecoder);
         matchOptions.wrap(mergeRequestDecoder.matchOptions());
-        lobbies.mergeLobbyIfMatch(1, // mergeRequestDecoder.lobbyId() TODO,
-                                  matchOptions);
+        lobbies.mergeLobbyIfMatch(mergeRequestDecoder.lobbyId(), matchOptions);
     }
 }

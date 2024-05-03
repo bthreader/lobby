@@ -31,6 +31,10 @@ public class LobbiesImpl implements Lobbies {
      */
     @Override
     public void joinLobbyIfMatch(final long userId, final MatchOptions matchOptions) {
+        if (userIdToLobbyIndex.get(userId) != null) {
+            clientResponder.executionFailure(ExecutionFailureReason.USER_ALREADY_IN_LOBBY);
+        }
+
         final LobbySearchResult result = LobbiesUtils.search(lobbies,
                                                              lobby -> lobby.isNotFull()
                                                                       && lobby.matches(matchOptions));
@@ -40,7 +44,6 @@ public class LobbiesImpl implements Lobbies {
             return;
         }
 
-        // TODO what if the user is already in a lobby?
         result.getLobby().addUser(userId);
         userIdToLobbyIndex.put(userId, result.getIndex());
         clientResponder.executionSuccess(result.getLobby().getId());
@@ -85,6 +88,7 @@ public class LobbiesImpl implements Lobbies {
         final long lobbyId = lobbyIdGenerator.nextId();
         lobbies.add(new Lobby(lobbyId, gameMode));
         lobbyIdToLobbyIndex.put(lobbyId, lobbies.size() - 1);
+        clientResponder.executionSuccess(lobbyId);
     }
 
     /**
@@ -106,6 +110,7 @@ public class LobbiesImpl implements Lobbies {
         // Add the user to the new lobby
         lobby.addUser(userId);
         userIdToLobbyIndex.put(userId, 111);
+        clientResponder.executionSuccess(lobbyId);
     }
 
     /**
@@ -116,19 +121,18 @@ public class LobbiesImpl implements Lobbies {
         final Integer lobbyIndex = lobbyIdToLobbyIndex.get(lobbyId);
 
         if (lobbyIndex == null) {
-            // TODO handle
-            // Can't delete non-existent lobby
+            clientResponder.executionFailure(ExecutionFailureReason.UNKNOWN_LOBBY);
             return;
         }
 
         if (lobbies.get(lobbyIndex).isNotEmpty()) {
-            // TODO handle
-            // Can't delete a non-empty lobby
+            clientResponder.executionFailure(ExecutionFailureReason.CANNOT_DELETE_NON_EMPTY_LOBBY);
             return;
         }
 
         // Remove
         ArrayListUtil.fastUnorderedRemove(lobbies, lobbyIndex);
+        clientResponder.executionSuccess(lobbyId);
     }
 
     /**

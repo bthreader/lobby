@@ -1,5 +1,7 @@
 package lobby.gateway;
 
+import lobby.gateway.matching.engine.MatchingEngineClient;
+import lobby.gateway.matching.engine.MatchingEngineClientImpl;
 import lobby.protocol.ImmutableMatchOptions;
 import lobby.protocol.codecs.GameMode;
 
@@ -25,12 +27,15 @@ public class GatewayApplication {
             switch (input.toLowerCase()) {
                 case "match":
                     matchingEngineClient.matchRequest(new ImmutableMatchOptions(GameMode.CAPTURE_THE_FLAG));
+                    continue;
                 case "merge":
                     matchingEngineClient.mergeRequest(1,
                                                       new ImmutableMatchOptions(GameMode.CAPTURE_THE_FLAG));
+                    continue;
                 case "help":
                     System.out.println("match\tsend a matchRequest");
                     System.out.println("merge\tsend a mergeRequest");
+                    continue;
                 default:
                     System.out.println(
                             "Command '" + input + "' not registered type 'help' for commands");

@@ -17,6 +17,9 @@ repositories {
 }
 
 dependencies {
+    // Core
+    implementation(project(":lobby-core"))
+
     // Use JUnit Jupiter for testing
     testImplementation(libs.junit)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

@@ -8,6 +8,10 @@ public enum ExecutionFailureReason
 
     ALL_LOBBIES_FULL((short)1),
 
+    USER_ALREADY_IN_LOBBY((short)2),
+
+    CANNOT_DELETE_NON_EMPTY_LOBBY((short)3),
+
     /**
      * To be used to represent not present or null.
      */
@@ -42,6 +46,8 @@ public enum ExecutionFailureReason
         {
             case 0: return UNKNOWN_LOBBY;
             case 1: return ALL_LOBBIES_FULL;
+            case 2: return USER_ALREADY_IN_LOBBY;
+            case 3: return CANNOT_DELETE_NON_EMPTY_LOBBY;
             case 255: return NULL_VAL;
         }
 

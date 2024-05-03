@@ -1,4 +1,4 @@
-package lobby.gateway;
+package lobby.gateway.matching.engine;
 
 import lobby.protocol.MatchOptions;
 

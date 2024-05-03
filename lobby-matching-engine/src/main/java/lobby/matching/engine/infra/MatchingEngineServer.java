@@ -7,14 +7,17 @@ import org.agrona.concurrent.UnsafeBuffer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 @Slf4j
 public class MatchingEngineServer implements Runnable {
     private final Selector selector;
     private final ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
-    private final DirectBuffer dBuffer = new UnsafeBuffer();
+    private final DirectBuffer bufferWrapper = new UnsafeBuffer();
     private final SessionContextImpl context = new SessionContextImpl();
     private final ClientResponder clientResponder = new ClientResponderImpl(context);
     private final IngressProcessor ingressProcessor = new IngressProcessor(clientResponder);
@@ -36,11 +39,9 @@ public class MatchingEngineServer implements Runnable {
             serverSocketChannel.bind(new InetSocketAddress(port));
             log.info("Bound to {}", port);
 
-            try {
-                serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            } catch (final ClosedChannelException e) {
-                throw new RuntimeException(e);
-            }
+
+            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
 
             // Start listening for clients
             while (true) {
@@ -51,16 +52,14 @@ public class MatchingEngineServer implements Runnable {
                     final SelectionKey key = iterator.next();
                     iterator.remove();
 
-                    try {
-                        // Process the client connection
-                        if (key.isAcceptable()) {
-                            accept(key);
-                        }
-                        if (key.isReadable()) {
-                            read(key);
-                        }
-                    } catch (final Exception ignored) {
+                    // Process the client connection
+                    if (key.isAcceptable()) {
+                        accept(key);
                     }
+                    if (key.isReadable()) {
+                        read(key);
+                    }
+
                 }
             }
         } catch (final IOException ex) {
@@ -82,7 +81,6 @@ public class MatchingEngineServer implements Runnable {
         final SocketChannel client = (SocketChannel) key.channel();
         buffer.clear();
 
-        // TODO how do we know if we've read a full message here?
         final int bytesRead = client.read(buffer);
         if (bytesRead == -1) {
             client.close();
@@ -90,7 +88,7 @@ public class MatchingEngineServer implements Runnable {
         }
         context.setClient(client);
         context.setSelectionKey(key);
-        dBuffer.wrap(buffer);
-        ingressProcessor.dispatch(dBuffer, 0, buffer.capacity());
+        bufferWrapper.wrap(buffer);
+        ingressProcessor.dispatch(bufferWrapper, 0, buffer.capacity());
     }
 }
